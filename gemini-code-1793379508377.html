@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>City of London Water Distribution & Watermain Standards Tests</title>
+  <style>
+    :root {
+      --primary: #004b87;
+      --primary-light: #e6f0f8;
+      --success: #1e7e34;
+      --success-bg: #d4edda;
+      --danger: #bd2130;
+      --danger-bg: #f8d7da;
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #212529;
+      --muted: #6c757d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+    }
+    header {
+      background-color: var(--primary);
+      color: #fff;
+      padding: 1.25rem 2rem;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    header h1 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1.5rem;
+    }
+    header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+    .sticky-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid #dee2e6;
+      padding: 0.75rem 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+    .bar-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      border: 2px solid var(--primary);
+      background: #fff;
+      color: var(--primary);
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .scoreboard {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .score-pill {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+    }
+    .reset-btn {
+      background: #6c757d;
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .reset-btn:hover {
+      background: #5a6268;
+    }
+    .container {
+      max-width: 900px;
+      margin: 1.5rem auto 3rem;
+      padding: 0 1rem;
+    }
+    .test-header-card {
+      background: var(--card);
+      border-left: 5px solid var(--primary);
+      padding: 1rem 1.25rem;
+      border-radius: 6px;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .test-header-card h2 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1.25rem;
+      color: var(--primary);
+    }
+    .test-header-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .q-card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border: 1px solid #e9ecef;
+    }
+    .q-title {
+      font-weight: 600;
+      margin: 0 0 0.85rem 0;
+      font-size: 1.02rem;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .opt-btn {
+      text-align: left;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background 0.12s, border-color 0.12s;
+      color: var(--text);
+    }
+    .opt-btn:hover:not(:disabled) {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+    .opt-btn:disabled {
+      cursor: default;
+    }
+    .opt-btn.correct {
+      background: var(--success-bg);
+      border-color: var(--success);
+      color: #155724;
+      font-weight: 600;
+    }
+    .opt-btn.incorrect {
+      background: var(--danger-bg);
+      border-color: var(--danger);
+      color: #721c24;
+    }
+    .feedback {
+      margin-top: 0.85rem;
+      padding: 0.75rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .feedback.show {
+      display: block;
+    }
+    .feedback.ok {
+      background: var(--success-bg);
+      color: #155724;
+      border-left: 4px solid var(--success);
+    }
+    .feedback.err {
+      background: var(--danger-bg);
+      color: #721c24;
+      border-left: 4px solid var(--danger);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>City of London Municipal Water Standards — Practice Exams</h1>
+  <p>Interactive Self-Marking Multiple-Choice Assessment</p>
+</header>
+
+<div class="sticky-bar">
+  <div class="bar-inner">
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-test1" onclick="switchTest('test1')">Test 1: DSRM Chapter 7 (20 Qs)</button>
+      <button class="tab-btn" id="tab-test2" onclick="switchTest('test2')">Test 2: Standard Contract Docs SW (20 Qs)</button>
+    </div>
+    <div class="scoreboard">
+      <span class="score-pill" id="progress-text">Answered: 0 / 20</span>
+      <span class="score-pill" id="score-text">Score: 0 / 0 (0%)</span>
+      <button class="reset-btn" onclick="resetCurrentTest()">Reset Test</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="test-content"></div>
+</div>
+
+<script>
+const testData = {
+  test1: {
+    title: "Test 1: Design Specifications & Requirements Manual (DSRM) — Chapter 7: Water Distribution System",
+    subtitle: "Covers hydraulic design, peaking factors, pressures, HGL boundary conditions, pipe sizing, water quality turnover, and layout standards.",
+    questions: [
+      {
+        q: "1. According to DSRM Section 7.1, the specifications in Chapter 7 apply to all water services, associated piping, and watermains up to what maximum diameter located within the City road allowance?",
+        options: ["300 mm", "400 mm", "450 mm", "600 mm"],
+        answer: 2,
+        explanation: "Section 7.1 states that Chapter 7 specifications apply to all water services and associated piping and to all watermains up to 450 mm diameter including appurtenances."
+      },
+      {
+        q: "2. Under Section 7.3.1 (Pressure and Flow Requirements), watermains must be sized to maintain maximum day demand plus fire flow at a minimum residual pressure of not less than:",
+        options: ["100 kPa (15 psi)", "140 kPa (20 psi)", "275 kPa (40 psi)", "310 kPa (45 psi)"],
+        answer: 1,
+        explanation: "Section 7.3.1(i) requires maintaining maximum day demand plus fire flow at a pressure not less than 140 kPa (20 psi) at any hydrant lateral or potential fire service connection."
+      },
+      {
+        q: "3. What is the minimum required operating pressure under Maximum Hourly Demand in residential land usage areas versus industrial/non-residential areas (Section 7.3.1)?",
+        options: [
+          "200 kPa (30 psi) residential / 275 kPa (40 psi) industrial",
+          "275 kPa (40 psi) residential / 310 kPa (45 psi) industrial",
+          "310 kPa (45 psi) residential / 380 kPa (55 psi) industrial",
+          "240 kPa (35 psi) for all areas"
+        ],
+        answer: 1,
+        explanation: "Section 7.3.1 requires a minimum pressure of 275 kPa (40 psi) in residential areas and not less than 310 kPa (45 psi) in industrial/non-residential areas during maximum hourly demand."
+      },
+      {
+        q: "4. Under Section 7.3.1(iv), what is the maximum allowable residual pressure in the water distribution system?",
+        options: ["550 kPa (80 psi)", "620 kPa (90 psi)", "690 kPa (100 psi)", "1035 kPa (150 psi)"],
+        answer: 2,
+        explanation: "Section 7.3.1(iv) specifies that maximum residual pressure must not exceed 690 kPa (100 psi, or 70.3 m of water)."
+      },
+      {
+        q: "5. According to Section 7.3.2.2, what is the design Average Day Domestic (residential) unit demand per capita?",
+        options: ["200 L/capita/day", "255 L/capita/day", "350 L/capita/day", "470 L/capita/day"],
+        answer: 1,
+        explanation: "Section 7.3.2.2 stipulates that the average day domestic (residential) unit demand for design shall be 255 litres per capita per day."
+      },
+      {
+        q: "6. What peaking factors are mandated in Section 7.3.2.2 for Maximum Day and Maximum Hour domestic water demands in subdivisions and site plans?",
+        options: [
+          "2.5 for Max Day and 4.5 for Max Hour",
+          "3.0 for Max Day and 6.0 for Max Hour",
+          "3.5 for Max Day and 7.8 for Max Hour",
+          "4.0 for Max Day and 8.5 for Max Hour"
+        ],
+        answer: 2,
+        explanation: "Section 7.3.2.2 specifies peaking factors of 3.5 for maximum day and 7.8 for maximum hour for subdivision and site plan designs."
+      },
+      {
+        q: "7. According to Table 7-1 (Residential Water Design Densities), what population densities (people per unit) are used for Low, Medium, and High density residential developments?",
+        options: [
+          "Low: 3.5 | Medium: 2.5 | High: 1.5",
+          "Low: 3.0 | Medium: 2.4 | High: 1.6",
+          "Low: 4.0 | Medium: 3.0 | High: 2.0",
+          "Low: 2.8 | Medium: 2.1 | High: 1.4"
+        ],
+        answer: 1,
+        explanation: "Table 7-1 defines residential water design densities as 3.0 people/unit for Low density, 2.4 people/unit for Medium density, and 1.6 people/unit for High density."
+      },
+      {
+        q: "8. Based on Table 7-2 (Design Friction Factors), which Hazen-Williams 'C' values must be used for hydraulic design regardless of pipe material?",
+        options: [
+          "100–150 mm: 100 | 200–250 mm: 110 | 300–600 mm: 120 | Over 600 mm: 130",
+          "All PVC pipes: 150 | All Ductile Iron pipes: 120",
+          "100–150 mm: 110 | 200–250 mm: 120 | 300–600 mm: 130 | Over 600 mm: 140",
+          "100–250 mm: 100 | 300–600 mm: 115 | Over 600 mm: 125"
+        ],
+        answer: 0,
+        explanation: "Table 7-2 specifies C-Factors regardless of pipe material: 100 for 100 & 150 mm; 110 for 200 & 250 mm; 120 for 300 to 600 mm; and 130 for over 600 mm."
+      },
+      {
+        q: "9. For single-family detached low-density residential areas, what is the minimum fire flow demand required for design (Section 7.3.3)?",
+        options: ["45 L/s", "60 L/s", "76 L/s", "110 L/s"],
+        answer: 2,
+        explanation: "Under Section 7.3.3, for single-family detached low-density residential areas, a minimum fire demand of 76 L/s is to be used."
+      },
+      {
+        q: "10. According to Section 7.3.4, what is the minimum standard diameter for watermains (except beyond the last hydrant on cul-de-sacs)?",
+        options: ["100 mm", "150 mm", "200 mm", "250 mm"],
+        answer: 1,
+        explanation: "Section 7.3.4 states that the minimum size for watermains shall be 150 mm diameter, except beyond the last hydrant on cul-de-sacs where smaller diameter pipe (50 mm or 100 mm) designed for domestic and maximum hour demands may be used."
+      },
+      {
+        q: "11. To maintain water quality (Section 7.3.5), the Water Distribution System must be designed so that water does not remain unused in the watermain under average day demand for more than:",
+        options: ["24 hours (1 day)", "48 hours (2 days)", "72 hours (3 days)", "120 hours (5 days)"],
+        answer: 2,
+        explanation: "Section 7.3.5 requires the system to be designed so that water shall not remain unused in the watermain for more than three (3) days under average day demand, verified by a hydraulic turnover analysis."
+      },
+      {
+        q: "12. According to Section 7.3.6, what are the maximum allowable flow velocities in a watermain during (a) maximum hour domestic flow and (b) fire flow conditions?",
+        options: [
+          "1.0 m/s domestic / 2.0 m/s fire flow",
+          "1.5 m/s domestic / 2.4 m/s fire flow",
+          "2.0 m/s domestic / 3.0 m/s fire flow",
+          "1.2 m/s domestic / 2.5 m/s fire flow"
+        ],
+        answer: 1,
+        explanation: "Section 7.3.6 mandates that maximum velocity in the pipe shall not exceed 1.5 m/s during maximum hour domestic flow conditions or 2.4 m/s during fire flow conditions."
+      },
+      {
+        q: "13. Under Section 7.3.7 (Boundary Conditions), what are the standard minimum Hydraulic Grade Lines (HGL) for the City's Low Level System and the Springbank/Westmount/Pond Mills/Wickerson High Level System?",
+        options: [
+          "285.0 m (Low Level) and 315.0 m (High Level)",
+          "301.8 m (Low Level) and 335.0 m (High Level)",
+          "317.0 m (Low Level) and 350.0 m (High Level)",
+          "300.0 m (Low Level) and 319.0 m (High Level)"
+        ],
+        answer: 1,
+        explanation: "Section 7.3.7 lists the minimum HGLs as 301.8 m for the Low Level System, 335.0 m for the Springbank/Westmount/Pond Mills/Wickerson High Level System, 317.0 m for Hyde Park/Uplands, and 319.0 m for Southeast."
+      },
+      {
+        q: "14. When a storm drain or culvert crosses over or under a watermain, insulation is required per Standard Drawing W-CS-68 unless the vertical separation is at least (Section 7.4.2):",
+        options: ["0.5 m", "1.0 m", "1.5 m", "1.7 m"],
+        answer: 3,
+        explanation: "Section 7.4.2 specifies that where storm drains or culverts cross over or under a watermain, insulation is required per W-CS-68 unless there is a minimum 1.7 m separation."
+      },
+      {
+        q: "15. What does Section 7.4.3 state regarding axial deflection (bending of the pipe barrel) for PVC watermain pipe?",
+        options: [
+          "Permitted up to 2 degrees per pipe length",
+          "Permitted only on pipes 200 mm and smaller",
+          "Prohibited for PVC pipe",
+          "Permitted if restrained joints are used"
+        ],
+        answer: 2,
+        explanation: "Section 7.4.3 explicitly states: 'Axial deflection (bending of the pipe barrel) is prohibited for P.V.C. pipe. Any change in the direction of the watermain in excess of the pipe joint deflection tolerance shall be made using an appropriate fitting.'"
+      },
+      {
+        q: "16. According to Section 7.4.1, on watermain bends along a street, the watermain may deviate from the standard U.C.C. utility alignment by up to 1.0 m, provided that the deviation is:",
+        options: [
+          "Towards the centerline of the road",
+          "Towards, or closer to, the street line (property line)",
+          "Approved by the Ministry of the Environment",
+          "Within the sanitary sewer trench"
+        ],
+        answer: 1,
+        explanation: "Section 7.4.1 states that on watermain bends, the watermain may deviate from the standard location by up to 1.0 m, provided that the deviation is towards, or closer to, the street line."
+      },
+      {
+        q: "17. Where caps and plugs are installed without a blow-off for a future watermain extension, Section 7.4.7 requires a 20 mm watermain stop to be tapped into the main to release trapped air/pressure at what maximum distance from the cap or plug?",
+        options: ["0.3 m", "0.5 m", "1.0 m", "1.5 m"],
+        answer: 1,
+        explanation: "Section 7.4.7 requires a 20 mm watermain stop to be tapped into the watermain no further than 0.5 m from the cap or plug to release trapped air/pressure prior to removal."
+      },
+      {
+        q: "18. What is the usual hydrostatic test pressure specified for the London water distribution system in Chapter 7 (Section 7.6)?",
+        options: ["690 kPa (100 psi)", "860 kPa (125 psi)", "1035 kPa (150 psi)", "1380 kPa (200 psi)"],
+        answer: 2,
+        explanation: "Chapter 7 (Section 7.6) notes that the usual test pressure in the London water system is 1035 kPa (150 psi)."
+      },
+      {
+        q: "19. According to Section 7.9.2, Pressure Reducing Valves (PRVs) are recommended on private plumbing systems where the municipal water pressure exceeds:",
+        options: ["415 kPa (60 psi)", "550 kPa (80 psi)", "690 kPa (100 psi)", "760 kPa (110 psi)"],
+        answer: 1,
+        explanation: "Section 7.9.2 is titled 'Pressure Reducing Valves Recommended Where Water Pressure Exceeds 550 kPa (80 PSI)' in alignment with the Ontario Building Code."
+      },
+      {
+        q: "20. In the City of London, what is the recorded gross average per capita water consumption rate range noted in Section 7.3.2.1?",
+        options: ["200 to 255 L/d", "300 to 400 L/d", "470 to 600 L/d", "650 to 800 L/d"],
+        answer: 2,
+        explanation: "Section 7.3.2.1 notes that the gross water consumption rate recorded for the City is 470 to 600 L/d (121 IGPD to 132 IGPD) average per capita."
+      }
+    ]
+  },
+  test2: {
+    title: "Test 2: Standard Contract Documents for Municipal Construction Projects — Watermains (SW / OPSS 441 Amendments)",
+    subtitle: "Covers Supplemental Standards for Sewer and Water (SW), OPSS 441 & 401 amendments, materials, installation, tracer wire, testing, and appurtenances.",
+    questions: [
+      {
+        q: "1. In the City of London Standard Contract Documents, watermain construction specifications are primarily structured as supplemental amendments to which Ontario Provincial Standard Specification (OPSS)?",
+        options: ["OPSS 407", "OPSS 410", "OPSS 441", "OPSS 510"],
+        answer: 2,
+        explanation: "Section 441 of the Supplemental Standards for Sewer and Water (SW) amends OPSS 441 (Construction Specification for Watermains)."
+      },
+      {
+        q: "2. According to the City of London's watermain valve specifications, in which direction must all watermain gate valves and fire hydrants open, and which AWWA standards govern resilient-seated gate valves and their protective interior/exterior coatings?",
+        options: [
+          "Counter-clockwise; AWWA C500 & C550",
+          "Clockwise; AWWA C500/C509 & AWWA C550",
+          "Clockwise; AWWA C900 & C105",
+          "Counter-clockwise; AWWA C515 & C600"
+        ],
+        answer: 1,
+        explanation: "City of London standards require all watermain valves and 3-way fire hydrants to open clockwise, with gate valves manufactured to AWWA C500/C509 and epoxy coated to AWWA C550."
+      },
+      {
+        q: "3. Under Section 441.05.24 (Tracer Wire), tracer wire must be installed along all non-metallic watermains, hydrant laterals, and water services. For open-cut PVC watermain installations, what gauge of tracer wire is standard?",
+        options: ["18 AWG", "14 AWG", "12 AWG (e.g., Copperhead 1230-HS)", "8 AWG"],
+        answer: 2,
+        explanation: "City of London watermain specifications require 12 AWG high-strength copper-clad steel tracer wire (such as Copperhead 1230-HS) on all open-cut PVC watermains, valves, and fire hydrants."
+      },
+      {
+        q: "4. What is the standard depth of cover required for newly installed watermains and water pipes under the City of London specifications?",
+        options: ["1.2 m to 1.5 m", "1.7 m to 1.9 m (typically 1.8 m)", "2.2 m to 2.5 m", "3.0 m minimum"],
+        answer: 1,
+        explanation: "City of London standards specify that water pipe is to be installed with 1.7 m to 1.9 m cover (1.8 m standard depth of cover for frost protection)."
+      },
+      {
+        q: "5. For standard PVC watermains (100 mm to 300 mm diameter) and PVC water services in the City of London, what Dimension Ratio (DR) pressure class is standard?",
+        options: ["DR 35", "DR 28", "DR 25", "DR 18 (Class 150 / AWWA C900)"],
+        answer: 3,
+        explanation: "Standard PVC watermains and water services in the City of London are specified as AWWA C900 DR 18."
+      },
+      {
+        q: "6. According to City of London specifications for Fire Hydrants, all municipal fire hydrants must be 3-way hydrants equipped with what type of pumper nozzle connection?",
+        options: [
+          "London Thread 65 mm only",
+          "Storz connection (100 mm)",
+          "British Instantaneous coupling",
+          "Flanged 150 mm outlet"
+        ],
+        answer: 1,
+        explanation: "All City of London fire hydrants are specified as 3-way hydrants complete with a Storz pumper connection, opening clockwise."
+      },
+      {
+        q: "7. Per Section 441.05.10 of the Standard Contract Documents, protective bollards installed around fire hydrants must be painted what colour?",
+        options: ["Safety Red", "Hydrant Yellow", "Matte Black", "Reflective White"],
+        answer: 1,
+        explanation: "Section 441.05.10 specifies that hydrant protection bollards shall be painted Hydrant Yellow."
+      },
+      {
+        q: "8. Under Supplemental Standards Section 401.05.05.02 (Trench Backfill), unless otherwise specified by the Contract Administrator, what material is to be used to backfill sewer and watermain trenches?",
+        options: [
+          "100% imported Granular 'A'",
+          "Unshrinkable fill for the full trench depth",
+          "Suitable native backfill material",
+          "19 mm clear crushed stone"
+        ],
+        answer: 2,
+        explanation: "Subsection 401.05.05.02 states: 'Native backfill material shall be used as trench backfill unless otherwise specified in the contract or as directed by the Contract Administrator.'"
+      },
+      {
+        q: "9. According to Section 401 of the Supplemental Standards for Sewer and Water, trench backfill material placed in the upper zone from 1.0 metre below road subgrade up to road subgrade must be compacted to a minimum density of:",
+        options: [
+          "90% of Maximum Dry Density",
+          "95% of Maximum Dry Density",
+          "98% of Maximum Dry Density",
+          "100% of Maximum Dry Density"
+        ],
+        answer: 2,
+        explanation: "The City's amendment to Section 401 specifies that trench backfill material placed in a zone from 1.0 metres below road subgrade to road subgrade shall be compacted to a minimum density of 98% of the maximum dry density."
+      },
+      {
+        q: "10. Under Subsection 407.07.18 / SW specifications, all water service boxes that fall within a concrete sidewalk or driveway must have a 100 mm piece of 10M (#3 bar) rod welded horizontally to the underside of the service box cover (approx. 40 mm below the surface) for what purpose?",
+        options: [
+          "To attach the tracer wire ground",
+          "To prevent frost heave",
+          "To lock the cover against vandalism",
+          "To assist magnetic locators"
+        ],
+        answer: 1,
+        explanation: "The specification requires a 100 mm piece of 10M rod welded horizontally to the underside of the service box cover, approximately 40 mm below the surface, specifically to prevent frost heave."
+      },
+      {
+        q: "11. In Section 441.07.25 of the Standard Contract Documents, what mandatory procedures are governed prior to commissioning and connecting a new watermain to the existing municipal system?",
+        options: [
+          "CCTV camera inspection and smoke testing",
+          "Mandrel deflection testing and air testing",
+          "Swabbing, flushing, hydrostatic testing, and disinfection",
+          "Holiday spark testing and ultrasonic thickness testing"
+        ],
+        answer: 2,
+        explanation: "Section 441.07.25 governs the protocol for swabbing, flushing, hydrostatic pressure/leakage testing, and disinfection/microbiological sampling of new watermains."
+      },
+      {
+        q: "12. Who is permitted to operate existing City of London watermain valves that are in service (live system valves) during construction or commissioning?",
+        options: [
+          "The Contractor's site superintendent",
+          "The Consulting Engineer's site inspector",
+          "Authorized City of London Water Operations personnel only",
+          "Any licensed plumber or watermain layer"
+        ],
+        answer: 2,
+        explanation: "Under the Standard Contract Documents and Water By-law W-8, only authorized City of London Water Operations personnel are permitted to operate existing live municipal watermain valves or hydrants."
+      },
+      {
+        q: "13. Separation between buried watermains/services and sanitary or storm sewers must conform to which Ministry of the Environment, Conservation and Parks (MECP) procedure?",
+        options: [
+          "Procedure B-1-5",
+          "Procedure F-6-1 (Procedures to Govern Separation of Sewers and Watermains)",
+          "Procedure D-5-3",
+          "Regulation 406/19"
+        ],
+        answer: 1,
+        explanation: "Watermain and sewer separation is governed by the MECP 'Design Guidelines for Drinking-Water Systems' Section F-6-1 ('Procedures to Govern Separation of Sewers and Watermains')."
+      },
+      {
+        q: "14. Under Procedure F-6-1 as referenced in the City of London standards, what is the standard minimum horizontal clearance required between a watermain and a sewer under normal parallel installation conditions?",
+        options: ["1.0 m", "1.5 m", "2.5 m", "3.0 m"],
+        answer: 2,
+        explanation: "Under normal conditions in MECP Procedure F-6-1, watermains must be laid with a minimum horizontal separation of 2.5 metres from any sewer or maintenance hole."
+      },
+      {
+        q: "15. When a new watermain crosses over or under a sewer and the vertical clear separation is less than the minimum required by Procedure F-6-1 (typically 0.5 m when under), how must a non-jointed or gasketed pipe be positioned?",
+        options: [
+          "A pipe joint must be centered directly over the sewer",
+          "Full lengths of watermain pipe must be centered at the point of crossing so joints are as far as possible from the sewer",
+          "The sewer must be removed and replaced with HDPE",
+          "A concrete maintenance hole must encase both pipes"
+        ],
+        answer: 1,
+        explanation: "Procedure F-6-1 requires centering a full length of watermain pipe at the crossing so that the watermain joints are equidistant and as far as possible from the sewer."
+      },
+      {
+        q: "16. Under the Standard Contract Documents (General Conditions GC7.01.04), within how many Working Days of the date shown in the written Order to Commence Work must the Contractor begin work on the project?",
+        options: ["2 Working Days", "5 Working Days", "10 Working Days", "15 Working Days"],
+        answer: 1,
+        explanation: "GC7.01.04.02 states: 'The Contractor shall commence work on the project within five (5) Working Days of the date shown in the written order to commence work.'"
+      },
+      {
+        q: "17. According to General Specifications (Section 5 - Project Sign Boards), prior to the release of holdback following construction, what must the Contractor do with the two 1.22 m x 2.44 m project sign boards?",
+        options: [
+          "Dispose of them at the City landfill",
+          "Leave them erected on site for the 2-year maintenance period",
+          "Remove and return them to the City of London Sign Shop (Adelaide North Yard - 1159 Adelaide St. N)",
+          "Deliver them to the Consulting Engineer's office"
+        ],
+        answer: 2,
+        explanation: "General Specifications Section 5 requires the Contractor to remove the project signs following construction (prior to release of holdback) and return them to the City of London sign shop at 1159 Adelaide St. N."
+      },
+      {
+        q: "18. According to the General Specifications, if a watermain or sewer excavation will come within 1 m (top of slope) of a London Hydro pole, the Contractor must request hydro pole support assistance at least how many working days in advance?",
+        options: ["1 working day", "2 working days", "3 working days", "10 working days"],
+        answer: 2,
+        explanation: "The General Specifications require calling London Hydro for pole support assistance at least 3 working days before excavating within 1 m (top of slope) of all hydro poles."
+      },
+      {
+        q: "19. In the City of London Supplemental Standards for Sewer and Water, what corrosion protection is required on buried metallic fittings, mechanical joints, and restraining glands on watermains?",
+        options: [
+          "Lead-based red oxide primer",
+          "Denso petrolatum paste, primer, and tape wrap system (or approved corrosion protection) plus sacrificial anodes",
+          "No protection is required if backfilled with sand",
+          "Galvanized zinc spray paint only"
+        ],
+        answer: 1,
+        explanation: "All buried metallic watermain fittings, bolts, and mechanical joints must be protected against corrosion using a petrolatum paste/tape wrap system (Denso or approved equal) and sacrificial zinc/magnesium anodes as specified."
+      },
+      {
+        q: "20. Under the Standard Contract Documents (Section 441 Measurement for Payment), how are Fire Hydrant Sets measured for payment, and what is included in the item?",
+        options: [
+          "By the vertical metre of barrel; excludes the isolation valve",
+          "By the unit (each); includes placing the hydrant, hydrant isolation gate valve, valve box, tee, lead pipe, and thrust restraint/blocking",
+          "Lump sum for the entire contract",
+          "By weight in tonnes of cast iron installed"
+        ],
+        answer: 1,
+        explanation: "Hydrant sets are measured by the unit (each) and include the supply and installation of the hydrant, hydrant lead/lateral pipe, hydrant isolation gate valve and box, anchoring/restraint, and boot block."
+      }
+    ]
+  }
+};
+
+let currentTest = 'test1';
+const state = {
+  test1: { answered: 0, score: 0, responses: {} },
+  test2: { answered: 0, score: 0, responses: {} }
+};
+
+function renderTest() {
+  const container = document.getElementById('test-content');
+  const data = testData[currentTest];
+  const st = state[currentTest];
+
+  let html = `
+    <div class="test-header-card">
+      <h2>${data.title}</h2>
+      <p>${data.subtitle}</p>
+    </div>
+  `;
+
+  data.questions.forEach((item, qIdx) => {
+    const userResp = st.responses[qIdx];
+    const isAnswered = userResp !== undefined;
+    const isCorrect = isAnswered && userResp === item.answer;
+
+    html += `
+      <div class="q-card" id="qcard-${qIdx}">
+        <div class="q-title">${item.q}</div>
+        <div class="options">
+    `;
+
+    item.options.forEach((opt, oIdx) => {
+      let btnClass = 'opt-btn';
+      if (isAnswered) {
+        if (oIdx === item.answer) btnClass += ' correct';
+        else if (oIdx === userResp) btnClass += ' incorrect';
+      }
+      const disabledAttr = isAnswered ? 'disabled' : '';
+      const letter = String.fromCharCode(65 + oIdx);
+      html += `
+        <button class="${btnClass}" ${disabledAttr} onclick="selectOption(${qIdx}, ${oIdx})">
+          <strong>${letter}.</strong> ${opt}
+        </button>
+      `;
+    });
+
+    html += `
+        </div>
+        <div class="feedback ${isAnswered ? 'show ' + (isCorrect ? 'ok' : 'err') : ''}" id="fb-${qIdx}">
+          ${isAnswered ? `<strong>${isCorrect ? 'Correct!' : 'Incorrect.'}</strong> ${item.explanation}` : ''}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+  updateScoreboard();
+}
+
+function selectOption(qIdx, oIdx) {
+  const st = state[currentTest];
+  if (st.responses[qIdx] !== undefined) return;
+
+  st.responses[qIdx] = oIdx;
+  st.answered++;
+  if (oIdx === testData[currentTest].questions[qIdx].answer) {
+    st.score++;
+  }
+  renderTest();
+}
+
+function updateScoreboard() {
+  const st = state[currentTest];
+  const total = testData[currentTest].questions.length;
+  const pct = st.answered > 0 ? Math.round((st.score / st.answered) * 100) : 0;
+
+  document.getElementById('progress-text').textContent = `Answered: ${st.answered} / ${total}`;
+  document.getElementById('score-text').textContent = `Score: ${st.score} / ${st.answered} (${pct}%)`;
+}
+
+function switchTest(testKey) {
+  currentTest = testKey;
+  document.getElementById('tab-test1').classList.toggle('active', testKey === 'test1');
+  document.getElementById('tab-test2').classList.toggle('active', testKey === 'test2');
+  renderTest();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetCurrentTest() {
+  state[currentTest] = { answered: 0, score: 0, responses: {} };
+  renderTest();
+}
+
+renderTest();
+</script>
+
+</body>
+</html>
